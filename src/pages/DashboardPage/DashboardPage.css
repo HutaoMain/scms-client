@@ -1,0 +1,37 @@
+.dashboard {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-gap: 20px;
+}
+
+.boxes {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-gap: 20px;
+}
+
+.box {
+  background-color: #f0f0f0;
+  padding: 20px;
+  text-align: center;
+}
+
+.box h3 {
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+.box p {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.chart {
+  background-color: #f0f0f0;
+  padding: 20px;
+}
+
+.chart h3 {
+  font-size: 18px;
+  margin-bottom: 10px;
+}
