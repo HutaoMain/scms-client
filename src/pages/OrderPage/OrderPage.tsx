@@ -1,45 +1,35 @@
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import { orderData } from "../../Data";
 import { useState } from "react";
 import InputBase from "@mui/material/InputBase";
 import IconButton from "@mui/material/IconButton";
-import { Add, Search, ManageSearch } from "@mui/icons-material";
+import { Search } from "@mui/icons-material";
+import { OrderInterface } from "../../types/Types";
+import { useQuery } from "react-query";
+import axios from "axios";
 
 const OrderPage = () => {
+  const { data } = useQuery<OrderInterface[]>({
+    queryKey: ["OrderPage"],
+    queryFn: async () =>
+      await axios
+        .get(`${import.meta.env.VITE_APP_API_URL}/api/order/list`)
+        .then((res) => res.data),
+  });
+
   const orderColumn: GridColDef[] = [
     {
-      field: "orderId",
-      headerName: "Order ID",
+      field: "id",
+      headerName: "ID",
       headerAlign: "center",
       align: "center",
       flex: 1,
     },
     {
-      field: "customerId",
-      headerName: "Customer ID",
+      field: "email",
+      headerName: "Email",
       headerAlign: "center",
       align: "center",
       flex: 1,
-    },
-    {
-      field: "products",
-      headerName: "Products",
-      headerAlign: "center",
-      align: "center",
-      width: 300,
-      renderCell: (params) => {
-        const products = params.row.products;
-        return (
-          <div>
-            {products.map((item: any, key: any) => (
-              <div key={key}>
-                <span>productId: {item.productId}</span>
-                <span>productQuantity: {item.quantity}</span>
-              </div>
-            ))}
-          </div>
-        );
-      },
     },
     {
       field: "totalPrice",
@@ -48,9 +38,31 @@ const OrderPage = () => {
       align: "center",
       flex: 1,
     },
+
     {
-      field: "orderDate",
-      headerName: "Order Date",
+      field: "productName",
+      headerName: "Product Name",
+      headerAlign: "center",
+      align: "center",
+      flex: 1,
+    },
+    {
+      field: "productDescription",
+      headerName: "Product Desc",
+      headerAlign: "center",
+      align: "center",
+      flex: 1,
+    },
+    {
+      field: "productPrice",
+      headerName: "Product Price",
+      headerAlign: "center",
+      align: "center",
+      flex: 1,
+    },
+    {
+      field: "createdDate",
+      headerName: "Date Ordered",
       headerAlign: "center",
       align: "center",
       flex: 1,
@@ -61,21 +73,28 @@ const OrderPage = () => {
       headerAlign: "center",
       align: "center",
       flex: 1,
-    },
-    {
-      field: "action",
-      headerName: "Action Button",
-      headerAlign: "center",
-      align: "center",
-      flex: 1,
-      renderCell: () => {
+      renderCell: (params) => {
+        const handleStatusChange = (event: any) => {
+          const newStatus = event.target.value;
+          axios.put(
+            `${import.meta.env.VITE_APP_API_URL}/api/order/updateStatus/${
+              params.row.id
+            }`,
+            {
+              status: newStatus,
+            }
+          );
+        };
+
         return (
-          <div className="action-btns">
-            <button className="action-btn view">
-              <ManageSearch />
-              View
-            </button>
-          </div>
+          <select
+            defaultValue={params.row.status}
+            onChange={handleStatusChange}
+          >
+            <option value="pending">Pending</option>
+            <option value="completed">Delivered</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
         );
       },
     },
@@ -87,16 +106,19 @@ const OrderPage = () => {
     setSearchTerm(event.target.value);
   };
 
-  const filtered = orderData?.filter((item) => {
-    return item.orderDate.toLowerCase().includes(searchTerm.toLowerCase());
+  const filtered = data?.filter((item) => {
+    return (
+      item.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.status.toLowerCase().includes(searchTerm.toLowerCase())
+    );
   });
 
   return (
     <div className="product-page">
-      <h1>Product Page</h1>
+      <h1>Order Page</h1>
       <div className="product-search-btn">
         <InputBase
-          placeholder="Search by Order Date"
+          placeholder="Search by Email or Status"
           value={searchTerm}
           onChange={handleSearch}
           sx={{
@@ -110,16 +132,13 @@ const OrderPage = () => {
             </IconButton>
           }
         />
-        <button className="add-product-btn">
-          Add Product <Add />
-        </button>
       </div>
 
       <section className="product-page-datagrid">
         <DataGrid
           rows={filtered ?? []}
           columns={orderColumn}
-          getRowId={(row) => row.orderId}
+          getRowId={(row) => row.id}
         />
       </section>
     </div>

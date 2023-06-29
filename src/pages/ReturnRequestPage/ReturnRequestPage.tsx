@@ -1,24 +1,15 @@
-import "./ProductPage.css";
-import Modal from "react-modal";
-import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import {
-  Add,
-  Delete,
-  ModeEdit,
-  Search,
-  ManageSearch,
-} from "@mui/icons-material";
+import { Add, Delete, ModeEdit, Search } from "@mui/icons-material";
+import { IconButton, InputBase } from "@mui/material";
 import { useState, useEffect } from "react";
-import InputBase from "@mui/material/InputBase";
-import IconButton from "@mui/material/IconButton";
-import { ProductInterface } from "../../types/Types";
 import { useQuery } from "react-query";
+import { ReturnRequestInterface } from "../../types/Types";
+import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import axios from "axios";
+import AddRequest from "../../components/ReturnRequestComponent/AddRequest";
+import Modal from "react-modal";
 import Confirmation from "../../components/ConfirmationModal/Confirmation";
+import UpdateRequest from "../../components/ReturnRequestComponent/UpdateRequest";
 import { confirmationModalCustomStyle } from "../../ConfirmationStyle";
-import AddProduct from "../../components/ProductComponents/addProduct/AddProduct";
-import UpdateProduct from "../../components/ProductComponents/UpdateProduct/UpdateProduct";
-import ViewProduct from "../../components/ProductComponents/ViewProduct/ViewProduct";
 
 const customStyle = {
   content: {
@@ -30,61 +21,45 @@ const customStyle = {
     transform: "translate(-50%, -50%)",
     borderRadius: "30px",
     width: "400px",
-    height: "380px",
+    height: "500px",
   },
   overlay: {
     zIndex: 1000,
   },
 };
 
-const customViewProduct = {
-  content: {
-    top: "50%",
-    left: "50%",
-    right: "auto",
-    bottom: "auto",
-    marginRight: "-50%",
-    transform: "translate(-50%, -50%)",
-    borderRadius: "30px",
-    width: "300px",
-    height: "380px",
-  },
-  overlay: {
-    zIndex: 1000,
-  },
-};
-
-const ProductPage = () => {
-  const { data } = useQuery<ProductInterface[]>({
-    queryKey: ["productPage"],
+const ReturnRequestPage = () => {
+  const { data } = useQuery<ReturnRequestInterface[]>({
+    queryKey: ["ReturnRequestPage"],
     queryFn: () =>
       axios
-        .get(`${import.meta.env.VITE_APP_API_URL}/api/product/list`)
+        .get(`${import.meta.env.VITE_APP_API_URL}/api/returnRequest/list`)
         .then((res) => res.data),
   });
 
+  const [isCreateReturnRequest, setIsCreateReturnRequest] =
+    useState<boolean>(false);
+
   const [paramsId, setParamsId] = useState<string>("");
-  const [list, setList] = useState<ProductInterface[]>();
+  const [list, setList] = useState<ReturnRequestInterface[]>();
 
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState<boolean>(false);
 
   const [isConfirmationOpen, setIsConfirmationOpen] = useState<boolean>(false);
-  const [isOpenViewProduct, setIsOpenViewProduct] = useState<boolean>(false);
 
   const toggleModalUpdate = (id: any) => {
     setParamsId(id);
     setIsUpdateModalOpen(!isUpdateModalOpen);
   };
 
+  const toggleOpenReturnRequest = () => {
+    setIsCreateReturnRequest(!isCreateReturnRequest);
+  };
+
   const toggleConfimationModal = (id: any) => {
     console.log("logging id", id);
     setParamsId(id);
     setIsConfirmationOpen(!isConfirmationOpen);
-  };
-
-  const toggleViewProduct = (id: any) => {
-    setParamsId(id);
-    setIsOpenViewProduct(!isOpenViewProduct);
   };
 
   useEffect(() => {
@@ -94,7 +69,7 @@ const ProductPage = () => {
   const handleDelete = async (id: any) => {
     try {
       await axios.delete(
-        `${import.meta.env.VITE_APP_API_URL}/api/product/delete/${id}`
+        `${import.meta.env.VITE_APP_API_URL}/api/returnRequest/delete/${id}`
       );
 
       setList(list?.filter((item) => item.id !== id));
@@ -111,36 +86,43 @@ const ProductPage = () => {
       flex: 1,
     },
     {
-      field: "name",
+      field: "productId",
+      headerName: "Product ID",
+      headerAlign: "center",
+      align: "center",
+      flex: 1,
+    },
+    {
+      field: "productName",
       headerName: "Product Name",
       headerAlign: "center",
       align: "center",
       flex: 1,
     },
     {
-      field: "price",
-      headerName: "Price",
+      field: "productQuantity",
+      headerName: "Product Quantity",
       headerAlign: "center",
       align: "center",
       flex: 1,
     },
     {
-      field: "quantity",
-      headerName: "Quantity",
-      headerAlign: "center",
-      align: "center",
-      flex: 1,
-    },
-    {
-      field: "description",
-      headerName: "Description",
+      field: "productPrice",
+      headerName: "Product Price",
       headerAlign: "center",
       align: "center",
       width: 200,
     },
     {
-      field: "createdDate",
-      headerName: "Date Added",
+      field: "reason",
+      headerName: "Reason",
+      headerAlign: "center",
+      align: "center",
+      flex: 1,
+    },
+    {
+      field: "email",
+      headerName: "Email",
       headerAlign: "center",
       align: "center",
       flex: 1,
@@ -154,14 +136,6 @@ const ProductPage = () => {
       renderCell: (params) => {
         return (
           <div className="action-btns">
-            <button
-              className="action-btn view"
-              onClick={() => toggleViewProduct(params.row.id)}
-            >
-              <ManageSearch />
-              View
-            </button>
-
             <button
               className="action-btn edit"
               onClick={() => toggleModalUpdate(params.row.id)}
@@ -191,12 +165,12 @@ const ProductPage = () => {
               />
             </Modal>
             <Modal
-              isOpen={isOpenViewProduct}
-              onRequestClose={toggleViewProduct}
-              style={customViewProduct}
+              isOpen={isUpdateModalOpen}
+              onRequestClose={toggleModalUpdate}
+              style={customStyle}
             >
-              <ViewProduct
-                toggleViewProduct={toggleViewProduct}
+              <UpdateRequest
+                toggleModalUpdate={toggleModalUpdate}
                 paramsId={paramsId}
               />
             </Modal>
@@ -206,12 +180,6 @@ const ProductPage = () => {
     },
   ];
 
-  const [isProductModalOpen, setIsProductModalOpen] = useState<boolean>(false);
-
-  const toggleProductModal = () => {
-    setIsProductModalOpen(!isProductModalOpen);
-  };
-
   const [searchTerm, setSearchTerm] = useState<string>("");
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -219,15 +187,17 @@ const ProductPage = () => {
   };
 
   const filtered = data?.filter((item) => {
-    return item.name.toLowerCase().includes(searchTerm.toLowerCase());
+    return (
+      item?.productName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item?.email?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
   });
 
   return (
     <div className="product-page">
-      <h1>Product Page</h1>
+      <h1>Return Request Page</h1>
       <div className="product-search-btn">
         <InputBase
-          placeholder="Search by Product Name"
           value={searchTerm}
           onChange={handleSearch}
           sx={{
@@ -241,11 +211,10 @@ const ProductPage = () => {
             </IconButton>
           }
         />
-        <button className="add-product-btn" onClick={toggleProductModal}>
-          Add Product <Add />
+        <button className="add-product-btn" onClick={toggleOpenReturnRequest}>
+          Create a Return Request <Add />
         </button>
       </div>
-
       <section className="product-page-datagrid">
         <DataGrid
           rows={filtered ?? []}
@@ -254,24 +223,14 @@ const ProductPage = () => {
         />
       </section>
       <Modal
-        isOpen={isProductModalOpen}
-        onRequestClose={toggleProductModal}
+        isOpen={isCreateReturnRequest}
+        onRequestClose={toggleOpenReturnRequest}
         style={customStyle}
       >
-        <AddProduct toggleProductModal={toggleProductModal} />
-      </Modal>
-      <Modal
-        isOpen={isUpdateModalOpen}
-        onRequestClose={toggleModalUpdate}
-        style={customStyle}
-      >
-        <UpdateProduct
-          toggleModalUpdate={toggleModalUpdate}
-          paramsId={paramsId}
-        />
+        <AddRequest toggleOpenReturnRequest={toggleOpenReturnRequest} />
       </Modal>
     </div>
   );
 };
 
-export default ProductPage;
+export default ReturnRequestPage;

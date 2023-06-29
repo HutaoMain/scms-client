@@ -1,17 +1,15 @@
+import { useQuery } from "react-query";
+import axios from "axios";
+import { useEffect, useState } from "react";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { Add, Delete, ModeEdit, Search } from "@mui/icons-material";
-import { useState, useEffect } from "react";
-
-import InputBase from "@mui/material/InputBase";
-import IconButton from "@mui/material/IconButton";
-import { useQuery } from "react-query";
-import { CategoryInterface } from "../../types/Types";
-import axios from "axios";
+import { ShipmentInterface } from "../../types/Types";
+import { IconButton, InputBase } from "@mui/material";
 import Modal from "react-modal";
+import AddShipment from "../../components/ShipmentComponent/AddShipment";
 import Confirmation from "../../components/ConfirmationModal/Confirmation";
 import { confirmationModalCustomStyle } from "../../ConfirmationStyle";
-import AddCategory from "../../components/CategoryComponents/addCategory/AddCategory";
-import UpdateCategory from "../../components/CategoryComponents/updateCategory/UpdateCategory";
+import UpdateShipment from "../../components/ShipmentComponent/UpdateShipment";
 
 const customStyles = {
   content: {
@@ -29,73 +27,97 @@ const customStyles = {
   },
 };
 
-const CategoryPage = () => {
-  const { data } = useQuery<CategoryInterface[]>({
-    queryKey: ["CategoryPage"],
-    queryFn: async () =>
-      await axios
-        .get(`${import.meta.env.VITE_APP_API_URL}/api/category/list`)
+const Shipment = () => {
+  const { data } = useQuery<ShipmentInterface[]>({
+    queryKey: ["Shipment"],
+    queryFn: () =>
+      axios
+        .get(`${import.meta.env.VITE_APP_API_URL}/api/shipment/list`)
         .then((res) => res.data),
   });
 
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [paramsId, setParamsId] = useState<string>("");
-  const [list, setList] = useState<CategoryInterface[]>();
-
-  const [isCategoryModalOpen, setIsCategoryModalOpen] =
-    useState<boolean>(false);
-
-  const [isCategoryUpdate, setIsCategoryUpdate] = useState<boolean>(false);
-
   const [isConfirmationOpen, setIsConfirmationOpen] = useState<boolean>(false);
-
-  const toggleModalUpdateCategory = (id: any) => {
-    console.log(id);
-    setParamsId(id);
-    setIsCategoryUpdate(!isCategoryUpdate);
-  };
-
-  const toggleAddCategory = () => {
-    setIsCategoryModalOpen(!isCategoryModalOpen);
-  };
-
-  const toggleConfimationModal = (id: any) => {
-    setParamsId(id);
-    setIsConfirmationOpen(!isConfirmationOpen);
-  };
+  const [list, setList] = useState<ShipmentInterface[]>();
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState<boolean>(false);
 
   useEffect(() => {
     setList(data || []);
   }, [data]);
 
+  const toggleOpenShipment = () => {
+    setIsModalOpen(!isModalOpen);
+  };
+
+  const toggleConfimationModal = (id: any) => {
+    console.log("logging id", id);
+    setParamsId(id);
+    setIsConfirmationOpen(!isConfirmationOpen);
+  };
+
+  const toggleModalUpdate = (id: any) => {
+    setParamsId(id);
+    setIsUpdateModalOpen(!isUpdateModalOpen);
+  };
+
   const handleDelete = async (id: any) => {
     try {
       await axios.delete(
-        `${import.meta.env.VITE_APP_API_URL}/api/category/delete/${id}`
+        `${import.meta.env.VITE_APP_API_URL}/api/shipment/delete/${id}`
       );
 
-      setList(list?.filter((item) => item.id !== id));
+      setList(list?.filter((item) => item.shipmentId !== id));
       window.location.reload();
     } catch (err) {}
   };
 
-  const categoryColumn: GridColDef[] = [
+  const productColumn: GridColDef[] = [
     {
-      field: "id",
+      field: "shipmentId",
       headerName: "ID",
       headerAlign: "center",
       align: "center",
       flex: 1,
     },
     {
-      field: "name",
-      headerName: "Category Name",
+      field: "email",
+      headerName: "Email",
       headerAlign: "center",
       align: "center",
       flex: 1,
     },
     {
-      field: "description",
-      headerName: "Description",
+      field: "shipmentStatus",
+      headerName: "Shipment Status",
+      headerAlign: "center",
+      align: "center",
+      flex: 1,
+    },
+    {
+      field: "orderId",
+      headerName: "Order ID",
+      headerAlign: "center",
+      align: "center",
+      flex: 1,
+    },
+    {
+      field: "orderTotalPrice",
+      headerName: "Order Total Price",
+      headerAlign: "center",
+      align: "center",
+      width: 200,
+    },
+    {
+      field: "orderProductName",
+      headerName: "Product Name",
+      headerAlign: "center",
+      align: "center",
+      flex: 1,
+    },
+    {
+      field: "orderProductDescription",
+      headerName: "Product Desc",
       headerAlign: "center",
       align: "center",
       flex: 1,
@@ -105,20 +127,21 @@ const CategoryPage = () => {
       headerName: "Action Button",
       headerAlign: "center",
       align: "center",
-      flex: 1,
+      width: 320,
       renderCell: (params) => {
         return (
           <div className="action-btns">
             <button
               className="action-btn edit"
-              onClick={() => toggleModalUpdateCategory(params.row.id)}
+              onClick={() => toggleModalUpdate(params.row.shipmentId)}
             >
               <ModeEdit />
               Edit
             </button>
+
             <button
               className="action-btn delete"
-              onClick={() => toggleConfimationModal(params.row.id)}
+              onClick={() => toggleConfimationModal(params.row.shipmentId)}
             >
               <Delete />
               Delete
@@ -136,6 +159,16 @@ const CategoryPage = () => {
                 closeModal={toggleConfimationModal}
               />
             </Modal>
+            <Modal
+              isOpen={isUpdateModalOpen}
+              onRequestClose={toggleModalUpdate}
+              style={customStyles}
+            >
+              <UpdateShipment
+                toggleModalUpdate={toggleModalUpdate}
+                paramsId={paramsId}
+              />
+            </Modal>
           </div>
         );
       },
@@ -149,15 +182,20 @@ const CategoryPage = () => {
   };
 
   const filtered = data?.filter((item) => {
-    return item?.name?.toLowerCase().includes(searchTerm.toLowerCase());
+    return (
+      item?.orderProductName
+        ?.toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      item?.email?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
   });
 
   return (
     <div className="product-page">
-      <h1>Category Page</h1>
+      <h1>Shipment Page</h1>
       <div className="product-search-btn">
         <InputBase
-          placeholder="Search by Category Name"
+          placeholder="Search by Product Ordered or Email"
           value={searchTerm}
           onChange={handleSearch}
           sx={{
@@ -171,38 +209,26 @@ const CategoryPage = () => {
             </IconButton>
           }
         />
-        <button className="add-product-btn" onClick={toggleAddCategory}>
-          Add Category <Add />
+        <button className="add-product-btn" onClick={toggleOpenShipment}>
+          Add Shipment <Add />
         </button>
       </div>
-
       <section className="product-page-datagrid">
         <DataGrid
           rows={filtered ?? []}
-          columns={categoryColumn}
-          getRowId={(row) => row.id}
+          columns={productColumn}
+          getRowId={(row) => row.shipmentId}
         />
       </section>
       <Modal
-        isOpen={isCategoryModalOpen}
-        onRequestClose={toggleAddCategory}
+        isOpen={isModalOpen}
+        onRequestClose={toggleOpenShipment}
         style={customStyles}
       >
-        <AddCategory toggleCategoryModal={toggleAddCategory} />
-      </Modal>
-      {/* update modal */}
-      <Modal
-        isOpen={isCategoryUpdate}
-        onRequestClose={toggleModalUpdateCategory}
-        style={customStyles}
-      >
-        <UpdateCategory
-          toggleModalUpdateCategory={toggleModalUpdateCategory}
-          paramsId={paramsId}
-        />
+        <AddShipment toggleOpenShipment={toggleOpenShipment} />
       </Modal>
     </div>
   );
 };
 
-export default CategoryPage;
+export default Shipment;

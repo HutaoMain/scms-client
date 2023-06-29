@@ -1,39 +1,25 @@
+import CategoryCount from "../../components/Charts/CategoryCount";
+import ProductCount from "../../components/Charts/ProductCount";
+import TotalSalesCount from "../../components/Charts/TotalSalesCount";
+import TotalShipmentCount from "../../components/Charts/TotalShipmentCount";
 import "./DashboardPage.css";
-import LineChart from "../../components/Charts/LineChart";
-import BarChart from "../../components/Charts/BarChart";
-import PieChart from "../../components/Charts/PieChart";
+// import BarChart from "../../components/Charts/BarChart";
+// import PieChart from "../../components/Charts/PieChart";
 
 const DashboardPage = () => {
-  const productsCount = 150;
-  const categoriesCount = 10;
-  const totalSales = 250;
-  const totalShipments = 50;
-
   return (
     <div className="dashboard">
       <div className="boxes">
-        <div className="box">
-          <h3>Products</h3>
-          <p>{productsCount}</p>
-        </div>
-        <div className="box">
-          <h3>Categories</h3>
-          <p>{categoriesCount}</p>
-        </div>
-        <div className="box">
-          <h3>Sales</h3>
-          <p>{totalSales}</p>
-        </div>
-        <div className="box">
-          <h3>Shipments</h3>
-          <p>{totalShipments}</p>
-        </div>
+        <ProductCount />
+        <CategoryCount />
+        <TotalSalesCount />
+        <TotalShipmentCount />
       </div>
-      <div className="charts">
+      {/* <div className="charts">
         <PieChart />
-        <LineChart />
+
         <BarChart />
-      </div>
+      </div> */}
     </div>
 
     // <div className="dashboard">

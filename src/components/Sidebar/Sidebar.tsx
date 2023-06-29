@@ -2,30 +2,14 @@ import { Link, useLocation } from "react-router-dom";
 import "./Sidebar.css";
 import { useState } from "react";
 import { Person } from "@mui/icons-material";
-// import Modal from "react-modal";
-
-// const customStyles = {
-//   overlay: {
-//     backgroundColor: "rgba(0, 0, 0, 0.5)", // Adjust the opacity as needed
-//     zIndex: 99999,
-//   },
-//   content: {
-//     top: "50%",
-//     left: "50%",
-//     right: "auto",
-//     bottom: "auto",
-//     marginRight: "-50%",
-//     transform: "translate(-50%, -50%)",
-//     border: "none",
-//     borderRadius: "8px",
-//     padding: "20px",
-//   },
-// };
-
-// Modal.setAppElement("#root");
+import useAuthStore from "../../zustand/AuthStore";
 
 const Sidebar = () => {
   const location = useLocation();
+
+  const user = useAuthStore((state) => state.user);
+
+  const clearUser = useAuthStore((state) => state.clearUser);
 
   const [open, setOpen] = useState<boolean>(false);
 
@@ -37,7 +21,11 @@ const Sidebar = () => {
     <div className="sidebar">
       <div className="sidebar-top-admin">
         <Person sx={{ fontSize: "40px" }} />
-        Admin
+        <span
+          style={{ wordWrap: "break-word", width: "75%", textAlign: "center" }}
+        >
+          {user}
+        </span>
       </div>
       <div className="sidebar-top-container">
         <Link to="/" style={{ textDecoration: "none" }}>
@@ -122,14 +110,16 @@ const Sidebar = () => {
           </Link>
 
           <p className="sidebar-title">Logistics and Shipping</p>
-          <Link to="/staff" style={{ textDecoration: "none" }}>
+          <Link to="/shipment" style={{ textDecoration: "none" }}>
             <li
-              className={location.pathname === "/staff" ? "sidebar-active" : ""}
+              className={
+                location.pathname === "/shipment" ? "sidebar-active" : ""
+              }
             >
               {/* <PersonOutlineIcon className="icon" /> */}
               <span
                 className={
-                  location.pathname === "/staff"
+                  location.pathname === "/shipment"
                     ? "sidebar-active"
                     : "sidebar-title-span"
                 }
@@ -139,44 +129,46 @@ const Sidebar = () => {
             </li>
           </Link>
 
-          <p className="sidebar-title">Forecasting</p>
-
-          <li
-            className={location.pathname === "/email" ? "sidebar-active" : ""}
-            onClick={toggleModal}
-          >
-            {/* <PersonOutlineIcon className="icon" /> */}
-            <span
+          <p className="sidebar-title">Request</p>
+          <Link to="/returnRequest" style={{ textDecoration: "none" }}>
+            <li
               className={
-                location.pathname === "/email"
-                  ? "sidebar-active"
-                  : "sidebar-title-span"
+                location.pathname === "/returnRequest" ? "sidebar-active" : ""
               }
+              onClick={toggleModal}
             >
-              SalesForecast
-            </span>
-          </li>
+              {/* <PersonOutlineIcon className="icon" /> */}
+              <span
+                className={
+                  location.pathname === "/returnRequest"
+                    ? "sidebar-active"
+                    : "sidebar-title-span"
+                }
+              >
+                Return Request
+              </span>
+            </li>
+          </Link>
 
           <p className="sidebar-title">User Security</p>
-
-          <li
-            className={location.pathname === "/email" ? "sidebar-active" : ""}
-            onClick={toggleModal}
-          >
-            {/* <PersonOutlineIcon className="icon" /> */}
-            <span
-              className={
-                location.pathname === "/email"
-                  ? "sidebar-active"
-                  : "sidebar-title-span"
-              }
+          <Link to="/users" style={{ textDecoration: "none" }}>
+            <li
+              className={location.pathname === "/users" ? "sidebar-active" : ""}
+              onClick={toggleModal}
             >
-              Users
-            </span>
-          </li>
+              <span
+                className={
+                  location.pathname === "/users"
+                    ? "sidebar-active"
+                    : "sidebar-title-span"
+                }
+              >
+                Users
+              </span>
+            </li>
+          </Link>
 
-          <p className="sidebar-title">USER</p>
-          <li>
+          <li style={{ marginTop: "10px" }} onClick={clearUser}>
             {/* <ExitToAppIcon className="icon" /> */}
             <span className="sidebar-title-span">Logout</span>
           </li>

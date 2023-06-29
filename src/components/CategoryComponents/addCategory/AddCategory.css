@@ -1,0 +1,35 @@
+.addcategory-item-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  width: 100%;
+}
+
+.addproduct-item-list {
+  width: 100%;
+
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.addcategory-input {
+  height: 28px;
+  font-size: 18px;
+  width: 100%;
+}
+
+.addcategory-btn-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: 20px;
+  gap: 10px;
+}
+
+.addproduct-btn {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
